@@ -5,7 +5,7 @@
 // URL: http://forums.getpaint.net/index.php?/topic/7291-
 
 #region UICode
-int Amount1 = 100; // [0,1000] Size
+int Amount1 = 100; // [2,1000] Size
 byte Amount2 = 0; // Gradient Type|Radial|Linear H|Linear V|Linear D1|Linear D2|Conical|Square
 bool Amount3 = false; // [0,1] Reflected
 ColorBgra Amount4 = ColorBgra.FromBgr(0,0,0); // Color 1
