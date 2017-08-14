@@ -1,81 +1,194 @@
-// Submenu: Render
-// Name: GridGrad
-// Title: GridGrad by pyrochild
-// Author: Zach Walker, a.k.a. pyrochild
-// URL: http://forums.getpaint.net/index.php?/topic/7291-
+using PaintDotNet;
+using PaintDotNet.Effects;
+using PaintDotNet.IndirectUI;
+using PaintDotNet.PropertySystem;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 
-#region UICode
-int Amount1 = 100; // [2,1000] Size
-byte Amount2 = 0; // Gradient Type|Radial|Linear H|Linear V|Linear D1|Linear D2|Conical|Square
-bool Amount3 = false; // [0,1] Reflected
-ColorBgra Amount4 = ColorBgra.FromBgr(0,0,0); // Color 1
-int Amount5 = 255; // [0,255] Color 1 Alpha
-ColorBgra Amount6 = ColorBgra.FromBgr(0,0,0); // Color 2
-int Amount7 = 255; // [0,255] Color 2 Alpha
-bool Amount8 = true; // [0,1] Gridlines
-ColorBgra Amount9 = ColorBgra.FromBgr(0,0,0); // Gridline Color
-#endregion
-
-void Render(Surface dst, Surface src, Rectangle rect)
+namespace pyrochild.effects.gradientgrid
 {
-    float cellrad = (float)Math.Sqrt(Amount1/2*Amount1/2+Amount1/2*Amount1/2);
-    ColorBgra CurrentPixel;
-    for (int y = rect.Top; y < rect.Bottom; y++)
+    [PluginSupportInfo(typeof(PluginSupportInfo))]
+    class GradientGrid : PropertyBasedEffect
     {
-        for (int x = rect.Left; x < rect.Right; x++)
+        public GradientGrid()
+            : base(StaticName, null, SubmenuNames.Render, EffectFlags.Configurable)
         {
-            CurrentPixel = src[x,y];
-            int dx = x%Amount1; //distance into a grid cell
-            int dy = y%Amount1;
+        }
 
-            if(Amount8 && (dx==0 || dy==0))
+        public static string StaticDialogName
+        {
+            get
             {
-                CurrentPixel=Amount9;
+                return StaticName + " by pyrochild";
             }
-            else
+        }
+
+        public static string StaticName
+        {
+            get
             {
-                int tlx=x/Amount1*Amount1; //top left corner of a grid cell
-                int tly=y/Amount1*Amount1;
-                int cx = tlx+Amount1/2; //center of a grid cell
-                int cy = tly+Amount1/2;
-                
-                int sx=x-cx; //distance from center of a grid cell
-                int sy=y-cy;
-                
-                float frac=0;
-                
-                switch(Amount2)
+                string name = "Gradient Grid";
+#if DEBUG
+                name += " BETA";
+#endif
+                return name;
+            }
+        }
+
+        public enum Properties
+        {
+            Size,
+            Type,
+            Reflected,
+            Color1,
+            Alpha1,
+            Color2,
+            Alpha2,
+            Lines,
+            LineColor,
+        }
+
+        public enum GradientType
+        {
+            Radial,
+            Horizontal,
+            Vertical,
+            Diagonal1,
+            Diagonal2,
+            Conical,
+            Square
+        }
+
+        int Size;
+        GradientType Type;
+        bool Reflected;
+        ColorBgra Color1, Color2;
+        int Alpha1, Alpha2;
+        bool Lines;
+        ColorBgra LineColor;
+
+        protected override PropertyCollection OnCreatePropertyCollection()
+        {
+            List<Property> props = new List<Property>();
+
+            props.Add(new Int32Property(Properties.Size, 100, 2, 1000));
+            props.Add(new StaticListChoiceProperty(Properties.Type, Enum.GetNames(typeof(GradientType))));
+            props.Add(new BooleanProperty(Properties.Reflected, false));
+            props.Add(new Int32Property(Properties.Color1,
+                ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
+            props.Add(new Int32Property(Properties.Alpha1, EnvironmentParameters.PrimaryColor.A, 0, 255));
+            props.Add(new Int32Property(Properties.Color2,
+                ColorBgra.ToOpaqueInt32(EnvironmentParameters.SecondaryColor.NewAlpha(255)), 0, 0xFFFFFF));
+            props.Add(new Int32Property(Properties.Alpha2, EnvironmentParameters.SecondaryColor.A, 0, 255));
+            props.Add(new BooleanProperty(Properties.Lines, false));
+            props.Add(new Int32Property(Properties.LineColor,
+                ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
+
+            return new PropertyCollection(props);
+        }
+
+        protected override void OnCustomizeConfigUIWindowProperties(PropertyCollection props)
+        {
+            props[ControlInfoPropertyNames.WindowTitle].Value = StaticDialogName;
+        }
+
+        protected override ControlInfo OnCreateConfigUI(PropertyCollection props)
+        {
+            ControlInfo configUI = CreateDefaultConfigUI(props);
+
+            configUI.SetPropertyControlType(Properties.Color1, PropertyControlType.ColorWheel);
+            configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Alpha1, ControlInfoPropertyNames.DisplayName, "Alpha");
+            configUI.SetPropertyControlType(Properties.Color2, PropertyControlType.ColorWheel);
+            configUI.SetPropertyControlValue(Properties.Color2, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Alpha2, ControlInfoPropertyNames.DisplayName, "Alpha");
+            configUI.SetPropertyControlType(Properties.LineColor, PropertyControlType.ColorWheel);
+            configUI.SetPropertyControlValue(Properties.LineColor, ControlInfoPropertyNames.DisplayName, "");
+
+            return configUI;
+        }
+
+        protected override void OnSetRenderInfo(PropertyBasedEffectConfigToken newToken, RenderArgs dstArgs, RenderArgs srcArgs)
+        {
+            Size = newToken.GetProperty<Int32Property>(Properties.Size).Value;
+            Type = (GradientType)Enum.Parse(typeof(GradientType), (string)newToken.GetProperty(Properties.Type).Value);
+            Reflected = newToken.GetProperty<BooleanProperty>(Properties.Reflected).Value;
+            Color1 = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.Color1).Value);
+            Alpha1 = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha1).Value;
+            Color2 = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.Color2).Value);
+            Alpha2 = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
+            Lines = newToken.GetProperty<BooleanProperty>(Properties.Lines).Value;
+            LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
+            
+            base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
+        }
+
+        protected unsafe override void OnRender(Rectangle[] renderRects, int startIndex, int length)
+        {
+            for (int i = startIndex; i < startIndex + length; ++i)
+            {
+                Rectangle rect = renderRects[i];
+                float cellrad = (float)Math.Sqrt(Size / 2 * Size / 2 + Size / 2 * Size / 2);
+                ColorBgra CurrentPixel;
+                for (int y = rect.Top; y < rect.Bottom; y++)
                 {
-                    case 0: //radial
-                        frac=(float)Math.Sqrt(sx*sx+sy*sy)/cellrad;
-                        break;
-                    case 1: //linear h
-                        frac=dx/(float)Amount1;
-                        break;
-                    case 2: //linear v
-                        frac=dy/(float)Amount1;
-                        break;
-                    case 3: //linear d1
-                        frac=(dx+dy)/(float)Amount1/2;
-                        break;
-                    case 4: //linear d2
-                        frac=(dx-dy+Amount1)/(float)Amount1/2;
-                        break;
-                    case 5: //conical
-                        frac=(float)(Math.Atan2(Math.Abs(sy),sx)/(Math.PI));
-                        break;
-                    case 6: //square
-                        frac=1-2*Math.Min(1-Math.Max(dx,dy)/(float)Amount1,Math.Min(dx,dy)/(float)Amount1);
-                        break;
+                    for (int x = rect.Left; x < rect.Right; x++)
+                    {
+                        int dx = x % Size; //distance into a grid cell
+                        int dy = y % Size;
+
+                        if (Lines && (dx == 0 || dy == 0))
+                        {
+                            CurrentPixel = LineColor;
+                        }
+                        else
+                        {
+                            int tlx = x / Size * Size; //top left corner of a grid cell
+                            int tly = y / Size * Size;
+                            int cx = tlx + Size / 2; //center of a grid cell
+                            int cy = tly + Size / 2;
+
+                            int sx = x - cx; //distance from center of a grid cell
+                            int sy = y - cy;
+
+                            float frac = 0;
+
+                            switch (Type)
+                            {
+                                case GradientType.Radial:
+                                    frac = (float)Math.Sqrt(sx * sx + sy * sy) / cellrad;
+                                    break;
+                                case GradientType.Horizontal:
+                                    frac = dx / (float)Size;
+                                    break;
+                                case GradientType.Vertical:
+                                    frac = dy / (float)Size;
+                                    break;
+                                case GradientType.Diagonal1:
+                                    frac = (dx + dy) / (float)Size / 2;
+                                    break;
+                                case GradientType.Diagonal2:
+                                    frac = (dx - dy + Size) / (float)Size / 2;
+                                    break;
+                                case GradientType.Conical:
+                                    frac = (float)(Math.Atan2(Math.Abs(sy), sx) / (Math.PI));
+                                    break;
+                                case GradientType.Square:
+                                    frac = 1 - 2 * Math.Min(1 - Math.Max(dx, dy) / (float)Size, Math.Min(dx, dy) / (float)Size);
+                                    break;
+                            }
+
+                            if (Reflected)
+                                frac = Math.Abs(-2 * frac + 1);
+
+                            CurrentPixel = ColorBgra.Lerp(Color1.NewAlpha((byte)Alpha1), Color2.NewAlpha((byte)Alpha2), frac);
+
+                        }
+                        DstArgs.Surface[x, y] = CurrentPixel;
+                    }
                 }
-                
-                if(Amount3)
-                    frac=Math.Abs(-2*frac+1);
-                
-                CurrentPixel=ColorBgra.Lerp(Amount4.NewAlpha((byte)Amount5),Amount6.NewAlpha((byte)Amount7),frac);
-                
             }
-            dst[x,y] = CurrentPixel;
         }
     }
 }
