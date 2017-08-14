@@ -64,13 +64,13 @@ namespace pyrochild.effects.gradientgrid
         GradientType Type;
         bool Reflected;
         ColorBgra Color1, Color2;
-        int Alpha1, Alpha2;
         bool Lines;
         ColorBgra LineColor;
 
         protected override PropertyCollection OnCreatePropertyCollection()
         {
             List<Property> props = new List<Property>();
+            List<PropertyCollectionRule> rules = new List<PropertyCollectionRule>();
 
             props.Add(new Int32Property(Properties.Size, 100, 2, 1000));
             props.Add(new StaticListChoiceProperty(Properties.Type, Enum.GetNames(typeof(GradientType))));
@@ -85,7 +85,9 @@ namespace pyrochild.effects.gradientgrid
             props.Add(new Int32Property(Properties.LineColor,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
 
-            return new PropertyCollection(props);
+            rules.Add(new ReadOnlyBoundToBooleanRule(Properties.LineColor, Properties.Lines, false));
+
+            return new PropertyCollection(props, rules);
         }
 
         protected override void OnCustomizeConfigUIWindowProperties(PropertyCollection props)
@@ -98,13 +100,17 @@ namespace pyrochild.effects.gradientgrid
             ControlInfo configUI = CreateDefaultConfigUI(props);
 
             configUI.SetPropertyControlType(Properties.Color1, PropertyControlType.ColorWheel);
-            configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "Color");
             configUI.SetPropertyControlValue(Properties.Alpha1, ControlInfoPropertyNames.DisplayName, "Alpha");
             configUI.SetPropertyControlType(Properties.Color2, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color2, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlValue(Properties.Alpha2, ControlInfoPropertyNames.DisplayName, "Alpha");
             configUI.SetPropertyControlType(Properties.LineColor, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.LineColor, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Reflected, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Reflected, ControlInfoPropertyNames.Description, "Reflected");
+            configUI.SetPropertyControlValue(Properties.Lines, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Lines, ControlInfoPropertyNames.Description, "Lines");
 
             return configUI;
         }
@@ -115,9 +121,9 @@ namespace pyrochild.effects.gradientgrid
             Type = (GradientType)Enum.Parse(typeof(GradientType), (string)newToken.GetProperty(Properties.Type).Value);
             Reflected = newToken.GetProperty<BooleanProperty>(Properties.Reflected).Value;
             Color1 = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.Color1).Value);
-            Alpha1 = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha1).Value;
+            Color1.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha1).Value;
             Color2 = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.Color2).Value);
-            Alpha2 = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
+            Color2.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
             Lines = newToken.GetProperty<BooleanProperty>(Properties.Lines).Value;
             LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
             
@@ -182,7 +188,7 @@ namespace pyrochild.effects.gradientgrid
                             if (Reflected)
                                 frac = Math.Abs(-2 * frac + 1);
 
-                            CurrentPixel = ColorBgra.Lerp(Color1.NewAlpha((byte)Alpha1), Color2.NewAlpha((byte)Alpha2), frac);
+                            CurrentPixel = ColorBgra.Lerp(Color1, Color2, frac);
 
                         }
                         DstArgs.Surface[x, y] = CurrentPixel;
