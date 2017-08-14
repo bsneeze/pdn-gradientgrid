@@ -12,7 +12,7 @@ namespace pyrochild.effects.gradientgrid
     class GradientGrid : PropertyBasedEffect
     {
         public GradientGrid()
-            : base(StaticName, null, SubmenuNames.Render, EffectFlags.Configurable)
+            : base(StaticName, new Bitmap(typeof(GradientGrid), "icon.png"), SubmenuNames.Render, EffectFlags.Configurable)
         {
         }
 
@@ -126,7 +126,7 @@ namespace pyrochild.effects.gradientgrid
             Color2.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
             Lines = newToken.GetProperty<BooleanProperty>(Properties.Lines).Value;
             LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
-            
+
             base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
         }
 
