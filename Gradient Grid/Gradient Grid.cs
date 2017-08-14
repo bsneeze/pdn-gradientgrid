@@ -85,7 +85,7 @@ namespace pyrochild.effects.gradientgrid
             props.Add(new Int32Property(Properties.LineColor,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
 
-            rules.Add(new ReadOnlyBoundToBooleanRule(Properties.LineColor, Properties.Lines, false));
+            rules.Add(new ReadOnlyBoundToBooleanRule(Properties.LineColor, Properties.Lines, true));
 
             return new PropertyCollection(props, rules);
         }
