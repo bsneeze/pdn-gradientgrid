@@ -190,7 +190,14 @@ namespace pyrochild.effects.gradientgrid
                                     break;
                             }
 
-                            frac = (frac - Start) / (End - Start);
+                            if (Start == End)
+                            {
+                                frac = frac < Start ? 0 : 1;
+                            }
+                            else
+                            {
+                                frac = (frac - Start) / (End - Start);
+                            }
 
                             if (Reflected)
                                 frac = Math.Abs(-2 * frac + 1);
