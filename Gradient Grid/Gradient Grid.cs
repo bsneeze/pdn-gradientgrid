@@ -50,7 +50,8 @@ namespace pyrochild.effects.gradientgrid
             Alpha2,
             Lines,
             LineColor,
-            GammaAdjust
+            GammaAdjust,
+            Offset
         }
 
         public enum GradientType
@@ -69,6 +70,7 @@ namespace pyrochild.effects.gradientgrid
         bool Reflected, Lines, GammaAdjust;
         ColorBgra Color1, Color2, LineColor;
         double Start, End;
+        Pair<double,double> Offset;
 
         protected override PropertyCollection OnCreatePropertyCollection()
         {
@@ -87,6 +89,9 @@ namespace pyrochild.effects.gradientgrid
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.SecondaryColor.NewAlpha(255)), 0, 0xFFFFFF));
             props.Add(new Int32Property(Properties.Alpha2, EnvironmentParameters.SecondaryColor.A, 0, 255));
             props.Add(new BooleanProperty(Properties.GammaAdjust, false));
+            props.Add(new DoubleVectorProperty(Properties.Offset,
+                Pair.Create(0.0, 0.0), Pair.Create(-1.0, -1.0), Pair.Create(1.0, 1.0)));
+
             props.Add(new BooleanProperty(Properties.Lines, false));
             props.Add(new Int32Property(Properties.LineColor,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
@@ -119,7 +124,7 @@ namespace pyrochild.effects.gradientgrid
             configUI.SetPropertyControlValue(Properties.Lines, ControlInfoPropertyNames.Description, "Lines");
             configUI.SetPropertyControlValue(Properties.GammaAdjust, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlValue(Properties.GammaAdjust, ControlInfoPropertyNames.Description, "Gamma-adjusted color blend");
-
+            
             return configUI;
         }
 
@@ -137,6 +142,7 @@ namespace pyrochild.effects.gradientgrid
             Start = newToken.GetProperty<DoubleProperty>(Properties.Start).Value;
             End = newToken.GetProperty<DoubleProperty>(Properties.End).Value;
             GammaAdjust = newToken.GetProperty<BooleanProperty>(Properties.GammaAdjust).Value;
+            Offset = newToken.GetProperty<DoubleVectorProperty>(Properties.Offset).Value;
 
             base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
         }
@@ -162,11 +168,14 @@ namespace pyrochild.effects.gradientgrid
                         }
                         else
                         {
+                            cell_x -= (int)(Offset.First * Size);
+                            cell_y -= (int)(Offset.Second * Size);
+
                             int cell_l = x / Size * Size; //top left corner of a grid cell
                             int cell_t = y / Size * Size;
 
-                            int cell_cx = x - cell_l - Size / 2; //distance from center of a grid cell
-                            int cell_cy = y - cell_t - Size / 2;
+                            int cell_cx = x - cell_l - Size / 2 - (int)(Offset.First * Size); //distance from center of a grid cell
+                            int cell_cy = y - cell_t - Size / 2 - (int)(Offset.Second * Size);
 
                             double frac = 0;
 
