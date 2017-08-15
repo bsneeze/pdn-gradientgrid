@@ -52,12 +52,12 @@ namespace pyrochild.effects.gradientgrid
         public enum GradientType
         {
             Radial,
-            Horizontal,
-            Vertical,
             Diagonal1,
             Diagonal2,
             Conical,
-            Square
+            Square,
+            Horizontal,
+            Vertical,
         }
 
         int Size;
