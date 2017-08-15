@@ -137,11 +137,12 @@ namespace pyrochild.effects.gradientgrid
 
         protected unsafe override void OnRender(Rectangle[] renderRects, int startIndex, int length)
         {
+            float cellrad = (float)Math.Sqrt(Size / 2 * Size / 2 + Size / 2 * Size / 2);
+            ColorBgra CurrentPixel;
+
             for (int i = startIndex; i < startIndex + length; ++i)
             {
                 Rectangle rect = renderRects[i];
-                float cellrad = (float)Math.Sqrt(Size / 2 * Size / 2 + Size / 2 * Size / 2);
-                ColorBgra CurrentPixel;
                 for (int y = rect.Top; y < rect.Bottom; y++)
                 {
                     for (int x = rect.Left; x < rect.Right; x++)
