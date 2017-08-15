@@ -137,7 +137,7 @@ namespace pyrochild.effects.gradientgrid
 
         protected unsafe override void OnRender(Rectangle[] renderRects, int startIndex, int length)
         {
-            float cellrad = (float)Math.Sqrt(Size / 2 * Size / 2 + Size / 2 * Size / 2);
+            double cellrad = Math.Sqrt(Size / 2 * Size / 2 + Size / 2 * Size / 2);
             ColorBgra CurrentPixel;
 
             for (int i = startIndex; i < startIndex + length; ++i)
@@ -147,47 +147,47 @@ namespace pyrochild.effects.gradientgrid
                 {
                     for (int x = rect.Left; x < rect.Right; x++)
                     {
-                        int dx = x % Size; //distance into a grid cell
-                        int dy = y % Size;
+                        int cell_x = x % Size; //distance into a grid cell
+                        int cell_y = y % Size;
 
-                        if (Lines && (dx == 0 || dy == 0))
+                        if (Lines && (cell_x == 0 || cell_y == 0))
                         {
                             CurrentPixel = LineColor;
                         }
                         else
                         {
-                            int tlx = x / Size * Size; //top left corner of a grid cell
-                            int tly = y / Size * Size;
-                            int cx = tlx + Size / 2; //center of a grid cell
-                            int cy = tly + Size / 2;
+                            int cell_l = x / Size * Size; //top left corner of a grid cell
+                            int cell_t = y / Size * Size;
 
-                            int sx = x - cx; //distance from center of a grid cell
-                            int sy = y - cy;
+                            int cell_cx = x - cell_l - Size / 2; //distance from center of a grid cell
+                            int cell_cy = y - cell_t - Size / 2;
 
                             double frac = 0;
 
                             switch (Type)
                             {
                                 case GradientType.Radial:
-                                    frac = (float)Math.Sqrt(sx * sx + sy * sy) / cellrad;
+                                    frac = Math.Sqrt(cell_cx * cell_cx + cell_cy * cell_cy) / cellrad;
                                     break;
                                 case GradientType.Horizontal:
-                                    frac = dx / (float)Size;
+                                    frac = cell_x / (double)Size;
                                     break;
                                 case GradientType.Vertical:
-                                    frac = dy / (float)Size;
+                                    frac = cell_y / (double)Size;
                                     break;
                                 case GradientType.Diagonal1:
-                                    frac = (dx + dy) / (float)Size / 2;
+                                    frac = (cell_x + cell_y) / (double)Size / 2;
                                     break;
                                 case GradientType.Diagonal2:
-                                    frac = (dx - dy + Size) / (float)Size / 2;
+                                    frac = (cell_x - cell_y + Size) / (double)Size / 2;
                                     break;
                                 case GradientType.Conical:
-                                    frac = (float)(Math.Atan2(Math.Abs(sy), sx) / (Math.PI));
+                                    frac = (Math.Atan2(Math.Abs(cell_cy), cell_cx) / (Math.PI));
                                     break;
                                 case GradientType.Square:
-                                    frac = 1 - 2 * Math.Min(1 - Math.Max(dx, dy) / (float)Size, Math.Min(dx, dy) / (float)Size);
+                                    frac = 1 - 2 * Math.Min(
+                                        1 - Math.Max(cell_x, cell_y) / (double)Size,
+                                        Math.Min(cell_x, cell_y) / (double)Size);
                                     break;
                             }
 
