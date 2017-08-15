@@ -39,6 +39,8 @@ namespace pyrochild.effects.gradientgrid
         public enum Properties
         {
             Size,
+            Start,
+            End,
             Type,
             Reflected,
             Color1,
@@ -62,10 +64,9 @@ namespace pyrochild.effects.gradientgrid
 
         int Size;
         GradientType Type;
-        bool Reflected;
-        ColorBgra Color1, Color2;
-        bool Lines;
-        ColorBgra LineColor;
+        bool Reflected, Lines;
+        ColorBgra Color1, Color2, LineColor;
+        double Start, End;
 
         protected override PropertyCollection OnCreatePropertyCollection()
         {
@@ -73,6 +74,8 @@ namespace pyrochild.effects.gradientgrid
             List<PropertyCollectionRule> rules = new List<PropertyCollectionRule>();
 
             props.Add(new Int32Property(Properties.Size, 100, 2, 1000));
+            props.Add(new DoubleProperty(Properties.Start, 0, 0, 1));
+            props.Add(new DoubleProperty(Properties.End, 1, 0, 1));
             props.Add(new StaticListChoiceProperty(Properties.Type, Enum.GetNames(typeof(GradientType))));
             props.Add(new BooleanProperty(Properties.Reflected, false));
             props.Add(new Int32Property(Properties.Color1,
@@ -98,7 +101,7 @@ namespace pyrochild.effects.gradientgrid
         protected override ControlInfo OnCreateConfigUI(PropertyCollection props)
         {
             ControlInfo configUI = CreateDefaultConfigUI(props);
-
+            
             configUI.SetPropertyControlType(Properties.Color1, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "Color");
             configUI.SetPropertyControlValue(Properties.Alpha1, ControlInfoPropertyNames.DisplayName, "Alpha");
@@ -126,6 +129,8 @@ namespace pyrochild.effects.gradientgrid
             Color2.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
             Lines = newToken.GetProperty<BooleanProperty>(Properties.Lines).Value;
             LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
+            Start = newToken.GetProperty<DoubleProperty>(Properties.Start).Value;
+            End = newToken.GetProperty<DoubleProperty>(Properties.End).Value;
 
             base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
         }
@@ -158,7 +163,7 @@ namespace pyrochild.effects.gradientgrid
                             int sx = x - cx; //distance from center of a grid cell
                             int sy = y - cy;
 
-                            float frac = 0;
+                            double frac = 0;
 
                             switch (Type)
                             {
@@ -184,6 +189,8 @@ namespace pyrochild.effects.gradientgrid
                                     frac = 1 - 2 * Math.Min(1 - Math.Max(dx, dy) / (float)Size, Math.Min(dx, dy) / (float)Size);
                                     break;
                             }
+
+                            frac = (frac - Start) / (End - Start);
 
                             if (Reflected)
                                 frac = Math.Abs(-2 * frac + 1);
