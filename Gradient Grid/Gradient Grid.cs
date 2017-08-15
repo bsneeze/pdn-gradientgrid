@@ -2,6 +2,7 @@ using PaintDotNet;
 using PaintDotNet.Effects;
 using PaintDotNet.IndirectUI;
 using PaintDotNet.PropertySystem;
+using pyrochild.effects.common;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -49,6 +50,7 @@ namespace pyrochild.effects.gradientgrid
             Alpha2,
             Lines,
             LineColor,
+            GammaAdjust
         }
 
         public enum GradientType
@@ -64,7 +66,7 @@ namespace pyrochild.effects.gradientgrid
 
         int Size;
         GradientType Type;
-        bool Reflected, Lines;
+        bool Reflected, Lines, GammaAdjust;
         ColorBgra Color1, Color2, LineColor;
         double Start, End;
 
@@ -84,6 +86,7 @@ namespace pyrochild.effects.gradientgrid
             props.Add(new Int32Property(Properties.Color2,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.SecondaryColor.NewAlpha(255)), 0, 0xFFFFFF));
             props.Add(new Int32Property(Properties.Alpha2, EnvironmentParameters.SecondaryColor.A, 0, 255));
+            props.Add(new BooleanProperty(Properties.GammaAdjust, false));
             props.Add(new BooleanProperty(Properties.Lines, false));
             props.Add(new Int32Property(Properties.LineColor,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
@@ -114,6 +117,8 @@ namespace pyrochild.effects.gradientgrid
             configUI.SetPropertyControlValue(Properties.Reflected, ControlInfoPropertyNames.Description, "Reflected");
             configUI.SetPropertyControlValue(Properties.Lines, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlValue(Properties.Lines, ControlInfoPropertyNames.Description, "Lines");
+            configUI.SetPropertyControlValue(Properties.GammaAdjust, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.GammaAdjust, ControlInfoPropertyNames.Description, "Gamma-adjusted color blend");
 
             return configUI;
         }
@@ -131,6 +136,7 @@ namespace pyrochild.effects.gradientgrid
             LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
             Start = newToken.GetProperty<DoubleProperty>(Properties.Start).Value;
             End = newToken.GetProperty<DoubleProperty>(Properties.End).Value;
+            GammaAdjust = newToken.GetProperty<BooleanProperty>(Properties.GammaAdjust).Value;
 
             base.OnSetRenderInfo(newToken, dstArgs, srcArgs);
         }
@@ -203,7 +209,14 @@ namespace pyrochild.effects.gradientgrid
                             if (Reflected)
                                 frac = Math.Abs(-2 * frac + 1);
 
-                            CurrentPixel = ColorBgra.Lerp(Color1, Color2, frac);
+                            if (GammaAdjust)
+                            {
+                                CurrentPixel = ColorBgraBlender.Blend(Color1, Color2, frac);
+                            }
+                            else
+                            {
+                                CurrentPixel = ColorBgra.Lerp(Color1, Color2, frac);
+                            }
 
                         }
                         DstArgs.Surface[x, y] = CurrentPixel;

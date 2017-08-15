@@ -56,9 +56,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="common\ColorBgraBlender.cs" />
     <Compile Include="Gradient Grid.cs" />
     <Compile Include="PluginSupportInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="common\SrgbGamma.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icon.png" />
