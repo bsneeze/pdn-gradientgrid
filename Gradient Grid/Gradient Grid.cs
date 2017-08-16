@@ -44,9 +44,8 @@ namespace pyrochild.effects.gradientgrid
             Type,
             Reflected,
             Color1,
-            Alpha1,
             Color2,
-            Alpha2,
+            Alphas,
             Lines,
             LineColor,
             GammaAdjust,
@@ -84,12 +83,16 @@ namespace pyrochild.effects.gradientgrid
             props.Add(new BooleanProperty(Properties.Reflected, false));
             props.Add(new Int32Property(Properties.Color1,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
-
-            props.Add(new Int32Property(Properties.Alpha1, EnvironmentParameters.PrimaryColor.A, 0, 255));
+            
             props.Add(new Int32Property(Properties.Color2,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.SecondaryColor.NewAlpha(255)), 0, 0xFFFFFF));
+            
+            props.Add(new DoubleVectorProperty(Properties.Alphas,
+                Pair.Create(
+                    EnvironmentParameters.PrimaryColor.A/255.0, 
+                    EnvironmentParameters.SecondaryColor.A/255.0),
+                Pair.Create(0.0, 0.0), Pair.Create(1.0, 1.0)));
 
-            props.Add(new Int32Property(Properties.Alpha2, EnvironmentParameters.SecondaryColor.A, 0, 255));
             props.Add(new BooleanProperty(Properties.GammaAdjust, false));
             props.Add(new DoubleVectorProperty(Properties.Offset,
                 Pair.Create(0.0, 0.0), Pair.Create(-1.0, -1.0), Pair.Create(1.0, 1.0)));
@@ -115,10 +118,10 @@ namespace pyrochild.effects.gradientgrid
             configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.DisplayName, "Gradient range");
             configUI.SetPropertyControlType(Properties.Color1, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "Color");
-            configUI.SetPropertyControlValue(Properties.Alpha1, ControlInfoPropertyNames.DisplayName, "Alpha");
             configUI.SetPropertyControlType(Properties.Color2, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color2, ControlInfoPropertyNames.DisplayName, "");
-            configUI.SetPropertyControlValue(Properties.Alpha2, ControlInfoPropertyNames.DisplayName, "Alpha");
+            configUI.SetPropertyControlType(Properties.Alphas, PropertyControlType.Slider);
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.DisplayName, "Color alphas (transparency)");
             configUI.SetPropertyControlType(Properties.LineColor, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.LineColor, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlValue(Properties.Reflected, ControlInfoPropertyNames.DisplayName, "");
@@ -137,9 +140,10 @@ namespace pyrochild.effects.gradientgrid
             Type = (GradientType)Enum.Parse(typeof(GradientType), (string)newToken.GetProperty(Properties.Type).Value);
             Reflected = newToken.GetProperty<BooleanProperty>(Properties.Reflected).Value;
             Color1 = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.Color1).Value);
-            Color1.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha1).Value;
             Color2 = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.Color2).Value);
-            Color2.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
+            Pair<double, double> Alphas = newToken.GetProperty<DoubleVectorProperty>(Properties.Alphas).Value;
+            Color1.A = (byte)(Alphas.First * 255);
+            Color2.A = (byte)(Alphas.Second * 255);
             Lines = newToken.GetProperty<BooleanProperty>(Properties.Lines).Value;
             LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
             Pair<double, double> Range = newToken.GetProperty<DoubleVectorProperty>(Properties.Range).Value;
