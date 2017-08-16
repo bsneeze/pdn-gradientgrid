@@ -17,26 +17,6 @@ namespace pyrochild.effects.gradientgrid
         {
         }
 
-        public static string StaticDialogName
-        {
-            get
-            {
-                return StaticName + " by pyrochild";
-            }
-        }
-
-        public static string StaticName
-        {
-            get
-            {
-                string name = "Gradient Grid";
-#if DEBUG
-                name += " BETA";
-#endif
-                return name;
-            }
-        }
-
         public enum Properties
         {
             Size,
@@ -189,7 +169,8 @@ namespace pyrochild.effects.gradientgrid
                 {
                     for (int x = rect.Left; x < rect.Right; x++)
                     {
-                        int cell_x = x % Size; //distance into a grid cell
+                        // distance into a grid cell
+                        int cell_x = x % Size;
                         int cell_y = y % Size;
 
                         if (Lines && (cell_x == 0 || cell_y == 0))
@@ -198,13 +179,16 @@ namespace pyrochild.effects.gradientgrid
                         }
                         else
                         {
+                            // offset cell position
                             cell_x -= (int)(Offset.First * Size);
                             cell_y -= (int)(Offset.Second * Size);
 
-                            int cell_l = x / Size * Size; //top left corner of a grid cell
+                            // top left corner of a grid cell
+                            int cell_l = x / Size * Size;
                             int cell_t = y / Size * Size;
 
-                            int cell_cx = x - cell_l - Size / 2 - (int)(Offset.First * Size); //distance from center of a grid cell
+                            // distance from center of a grid cell
+                            int cell_cx = x - cell_l - Size / 2 - (int)(Offset.First * Size);
                             int cell_cy = y - cell_t - Size / 2 - (int)(Offset.Second * Size);
 
                             double frac = 0;
@@ -235,16 +219,18 @@ namespace pyrochild.effects.gradientgrid
                                         Math.Min(cell_x, cell_y) / (double)Size);
                                     break;
                             }
-
+                            
                             if (Start == End)
                             {
+                                // avoid infinities
                                 frac = frac < Start ? 0 : 1;
                             }
                             else
                             {
                                 frac = (frac - Start) / (End - Start);
                             }
-
+                            
+                            // clamp
                             if (frac < 0) frac = 0;
                             else if (frac > 1) frac = 1;
 
@@ -259,11 +245,30 @@ namespace pyrochild.effects.gradientgrid
                             {
                                 CurrentPixel = ColorBgra.Lerp(Color1, Color2, frac);
                             }
-
                         }
                         DstArgs.Surface[x, y] = CurrentPixel;
                     }
                 }
+            }
+        }
+
+        public static string StaticDialogName
+        {
+            get
+            {
+                return StaticName + " by pyrochild";
+            }
+        }
+
+        public static string StaticName
+        {
+            get
+            {
+                string name = "Gradient Grid";
+#if DEBUG
+                name += " BETA";
+#endif
+                return name;
             }
         }
     }
