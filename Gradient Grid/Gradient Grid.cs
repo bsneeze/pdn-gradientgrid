@@ -245,6 +245,9 @@ namespace pyrochild.effects.gradientgrid
                                 frac = (frac - Start) / (End - Start);
                             }
 
+                            if (frac < 0) frac = 0;
+                            else if (frac > 1) frac = 1;
+
                             if (Reflected)
                                 frac = Math.Abs(-2 * frac + 1);
 
