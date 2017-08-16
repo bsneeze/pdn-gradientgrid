@@ -97,9 +97,8 @@ namespace pyrochild.effects.gradientgrid
 
             configUI.SetPropertyControlValue(Properties.Size, ControlInfoPropertyNames.SliderLargeChange, 10);
             configUI.SetPropertyControlValue(Properties.Size, ControlInfoPropertyNames.SliderSmallChange, 5);
-            configUI.SetPropertyControlValue(Properties.Type, ControlInfoPropertyNames.DisplayName, "");
+            configUI.SetPropertyControlValue(Properties.Type, ControlInfoPropertyNames.DisplayName, "Gradient type");
             configUI.SetPropertyControlType(Properties.Range, PropertyControlType.Slider);
-            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.DisplayName, "Gradient range");
             configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.SliderLargeChangeX, 0.1);
             configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.SliderSmallChangeX, 0.05);
             configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.UpDownIncrementX, 0.01);
