@@ -76,21 +76,21 @@ namespace pyrochild.effects.gradientgrid
             List<PropertyCollectionRule> rules = new List<PropertyCollectionRule>();
 
             props.Add(new Int32Property(Properties.Size, 100, 2, 1000));
+            props.Add(new StaticListChoiceProperty(Properties.Type, Enum.GetNames(typeof(GradientType))));
             props.Add(new DoubleVectorProperty(Properties.Range,
                 Pair.Create(0.0, 1.0), Pair.Create(0.0, 0.0), Pair.Create(1.0, 1.0)));
 
-            props.Add(new StaticListChoiceProperty(Properties.Type, Enum.GetNames(typeof(GradientType))));
             props.Add(new BooleanProperty(Properties.Reflected, false));
             props.Add(new Int32Property(Properties.Color1,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
             
             props.Add(new Int32Property(Properties.Color2,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.SecondaryColor.NewAlpha(255)), 0, 0xFFFFFF));
-            
+
             props.Add(new DoubleVectorProperty(Properties.Alphas,
                 Pair.Create(
-                    EnvironmentParameters.PrimaryColor.A/255.0, 
-                    EnvironmentParameters.SecondaryColor.A/255.0),
+                    EnvironmentParameters.PrimaryColor.A / 255.0,
+                    EnvironmentParameters.SecondaryColor.A / 255.0),
                 Pair.Create(0.0, 0.0), Pair.Create(1.0, 1.0)));
 
             props.Add(new BooleanProperty(Properties.GammaAdjust, false));
@@ -114,14 +114,30 @@ namespace pyrochild.effects.gradientgrid
         protected override ControlInfo OnCreateConfigUI(PropertyCollection props)
         {
             ControlInfo configUI = CreateDefaultConfigUI(props);
+
+            configUI.SetPropertyControlValue(Properties.Size, ControlInfoPropertyNames.SliderLargeChange, 10);
+            configUI.SetPropertyControlValue(Properties.Size, ControlInfoPropertyNames.SliderSmallChange, 5);
+            configUI.SetPropertyControlValue(Properties.Type, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlType(Properties.Range, PropertyControlType.Slider);
             configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.DisplayName, "Gradient range");
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.SliderLargeChangeX, 0.1);
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.SliderSmallChangeX, 0.05);
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.UpDownIncrementX, 0.01);
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.SliderLargeChangeY, 0.1);
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.SliderSmallChangeY, 0.05);
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.UpDownIncrementY, 0.01);
             configUI.SetPropertyControlType(Properties.Color1, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "Color");
             configUI.SetPropertyControlType(Properties.Color2, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color2, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlType(Properties.Alphas, PropertyControlType.Slider);
             configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.DisplayName, "Color alphas (transparency)");
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.SliderLargeChangeX, 0.1);
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.SliderSmallChangeX, 0.05);
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.UpDownIncrementX, 0.01);
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.SliderLargeChangeY, 0.1);
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.SliderSmallChangeY, 0.05);
+            configUI.SetPropertyControlValue(Properties.Alphas, ControlInfoPropertyNames.UpDownIncrementY, 0.01);
             configUI.SetPropertyControlType(Properties.LineColor, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.LineColor, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlValue(Properties.Reflected, ControlInfoPropertyNames.DisplayName, "");
@@ -130,7 +146,13 @@ namespace pyrochild.effects.gradientgrid
             configUI.SetPropertyControlValue(Properties.Lines, ControlInfoPropertyNames.Description, "Lines");
             configUI.SetPropertyControlValue(Properties.GammaAdjust, ControlInfoPropertyNames.DisplayName, "");
             configUI.SetPropertyControlValue(Properties.GammaAdjust, ControlInfoPropertyNames.Description, "Gamma-adjusted color blend");
-            
+            configUI.SetPropertyControlValue(Properties.Offset, ControlInfoPropertyNames.SliderLargeChangeX, 0.1);
+            configUI.SetPropertyControlValue(Properties.Offset, ControlInfoPropertyNames.SliderSmallChangeX, 0.05);
+            configUI.SetPropertyControlValue(Properties.Offset, ControlInfoPropertyNames.UpDownIncrementX, 0.01);
+            configUI.SetPropertyControlValue(Properties.Offset, ControlInfoPropertyNames.SliderLargeChangeY, 0.1);
+            configUI.SetPropertyControlValue(Properties.Offset, ControlInfoPropertyNames.SliderSmallChangeY, 0.05);
+            configUI.SetPropertyControlValue(Properties.Offset, ControlInfoPropertyNames.UpDownIncrementY, 0.01);
+
             return configUI;
         }
 
