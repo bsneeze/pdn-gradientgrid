@@ -40,8 +40,7 @@ namespace pyrochild.effects.gradientgrid
         public enum Properties
         {
             Size,
-            Start,
-            End,
+            Range,
             Type,
             Reflected,
             Color1,
@@ -70,7 +69,7 @@ namespace pyrochild.effects.gradientgrid
         bool Reflected, Lines, GammaAdjust;
         ColorBgra Color1, Color2, LineColor;
         double Start, End;
-        Pair<double,double> Offset;
+        Pair<double, double> Offset;
 
         protected override PropertyCollection OnCreatePropertyCollection()
         {
@@ -78,15 +77,18 @@ namespace pyrochild.effects.gradientgrid
             List<PropertyCollectionRule> rules = new List<PropertyCollectionRule>();
 
             props.Add(new Int32Property(Properties.Size, 100, 2, 1000));
-            props.Add(new DoubleProperty(Properties.Start, 0, 0, 1));
-            props.Add(new DoubleProperty(Properties.End, 1, 0, 1));
+            props.Add(new DoubleVectorProperty(Properties.Range,
+                Pair.Create(0.0, 1.0), Pair.Create(0.0, 0.0), Pair.Create(1.0, 1.0)));
+
             props.Add(new StaticListChoiceProperty(Properties.Type, Enum.GetNames(typeof(GradientType))));
             props.Add(new BooleanProperty(Properties.Reflected, false));
             props.Add(new Int32Property(Properties.Color1,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.PrimaryColor.NewAlpha(255)), 0, 0xFFFFFF));
+
             props.Add(new Int32Property(Properties.Alpha1, EnvironmentParameters.PrimaryColor.A, 0, 255));
             props.Add(new Int32Property(Properties.Color2,
                 ColorBgra.ToOpaqueInt32(EnvironmentParameters.SecondaryColor.NewAlpha(255)), 0, 0xFFFFFF));
+
             props.Add(new Int32Property(Properties.Alpha2, EnvironmentParameters.SecondaryColor.A, 0, 255));
             props.Add(new BooleanProperty(Properties.GammaAdjust, false));
             props.Add(new DoubleVectorProperty(Properties.Offset,
@@ -109,7 +111,8 @@ namespace pyrochild.effects.gradientgrid
         protected override ControlInfo OnCreateConfigUI(PropertyCollection props)
         {
             ControlInfo configUI = CreateDefaultConfigUI(props);
-            
+            configUI.SetPropertyControlType(Properties.Range, PropertyControlType.Slider);
+            configUI.SetPropertyControlValue(Properties.Range, ControlInfoPropertyNames.DisplayName, "Gradient range");
             configUI.SetPropertyControlType(Properties.Color1, PropertyControlType.ColorWheel);
             configUI.SetPropertyControlValue(Properties.Color1, ControlInfoPropertyNames.DisplayName, "Color");
             configUI.SetPropertyControlValue(Properties.Alpha1, ControlInfoPropertyNames.DisplayName, "Alpha");
@@ -139,8 +142,9 @@ namespace pyrochild.effects.gradientgrid
             Color2.A = (byte)newToken.GetProperty<Int32Property>(Properties.Alpha2).Value;
             Lines = newToken.GetProperty<BooleanProperty>(Properties.Lines).Value;
             LineColor = ColorBgra.FromOpaqueInt32(newToken.GetProperty<Int32Property>(Properties.LineColor).Value);
-            Start = newToken.GetProperty<DoubleProperty>(Properties.Start).Value;
-            End = newToken.GetProperty<DoubleProperty>(Properties.End).Value;
+            Pair<double, double> Range = newToken.GetProperty<DoubleVectorProperty>(Properties.Range).Value;
+            Start = Range.First;
+            End = Range.Second;
             GammaAdjust = newToken.GetProperty<BooleanProperty>(Properties.GammaAdjust).Value;
             Offset = newToken.GetProperty<DoubleVectorProperty>(Properties.Offset).Value;
 
